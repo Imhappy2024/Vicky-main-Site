@@ -1,118 +1,69 @@
-import React, { useEffect, useState } from "react";
-import "./App.css";
-import { RetellWebClient } from "retell-client-js-sdk";
-
-const agentId = "ENTER_YOUR_AGENT_ID";
-
-interface RegisterCallResponse {
-  access_token: string;
+.voice-widget {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 99999;
 }
-
-const retellWebClient = new RetellWebClient();
-
-const App = () => {
-  const [isCalling, setIsCalling] = useState(false);
-
-  // Initialize the SDK
-  useEffect(() => {
-    retellWebClient.on("call_started", () => {
-      console.log("call started");
-    });
-    
-    retellWebClient.on("call_ended", () => {
-      console.log("call ended");
-      setIsCalling(false);
-    });
-    
-    // When agent starts talking for the utterance
-    // useful for animation
-    retellWebClient.on("agent_start_talking", () => {
-      console.log("agent_start_talking");
-    });
-    
-    // When agent is done talking for the utterance
-    // useful for animation
-    retellWebClient.on("agent_stop_talking", () => {
-      console.log("agent_stop_talking");
-    });
-    
-    // Real time pcm audio bytes being played back, in format of Float32Array
-    // only available when emitRawAudioSamples is true
-    retellWebClient.on("audio", (audio) => {
-      // console.log(audio);
-    });
-    
-    // Update message such as transcript
-    // You can get transcrit with update.transcript
-    // Please note that transcript only contains last 5 sentences to avoid the payload being too large
-    retellWebClient.on("update", (update) => {
-      // console.log(update);
-    });
-    
-    retellWebClient.on("metadata", (metadata) => {
-      // console.log(metadata);
-    });
-    
-    retellWebClient.on("error", (error) => {
-      console.error("An error occurred:", error);
-      // Stop the call
-      retellWebClient.stopCall();
-    });
-  }, []);
-
-  const toggleConversation = async () => {
-    if (isCalling) {
-      retellWebClient.stopCall();
-    } else {
-      const registerCallResponse = await registerCall(agentId);
-      if (registerCallResponse.access_token) {
-        retellWebClient
-          .startCall({
-            accessToken: registerCallResponse.access_token,
-          })
-          .catch(console.error);
-        setIsCalling(true); // Update button to "Stop" when conversation starts
-      }
-    }
-  };
-
-  async function registerCall(agentId: string): Promise<RegisterCallResponse> {
-    try {
-      // Update the URL to match the new backend endpoint you created
-      const response = await fetch("http://localhost:8080/create-web-call", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          agent_id: agentId, // Pass the agentId as agent_id
-          // You can optionally add metadata and retell_llm_dynamic_variables here if needed
-          // metadata: { your_key: "your_value" },
-          // retell_llm_dynamic_variables: { variable_key: "variable_value" }
-        }),
-      });
-  
-      if (!response.ok) {
-        throw new Error(`Error: ${response.status}`);
-      }
-  
-      const data: RegisterCallResponse = await response.json();
-      return data;
-    } catch (err) {
-      console.log(err);
-      throw new Error(err);
-    }
-  }
-
-  return (
-    <div className="App">
-      <header className="App-header">
-        <button onClick={toggleConversation}>
-          {isCalling ? "Stop" : "Start"}
-        </button>
-      </header>
-    </div>
-  );
-};
-
-export default App;
+.voice-widget-main {
+  display: flex;
+  align-items: center;
+  background: #fff;
+  border-radius: 30px;
+  box-shadow: 0 3px 24px rgba(0,0,0,0.10);
+  padding: 4px 14px 4px 4px;
+  min-width: 240px;
+  min-height: 56px;
+}
+.voice-logo {
+  width: 44px; height: 44px;
+  background: #fff;
+  border-radius: 50%;
+  margin-right: 8px;
+  border: 2.5px solid #f5f5f5;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 0 6px rgba(0,0,0,0.03);
+}
+.voice-chat-btn {
+  display: flex;
+  align-items: center;
+  background: #111;
+  color: #fff;
+  font-weight: 700;
+  font-size: 18px;
+  border: none;
+  border-radius: 22px;
+  padding: 9px 25px 9px 16px;
+  margin-right: 10px;
+  cursor: pointer;
+  transition: background 0.18s;
+  min-width: 145px;
+  justify-content: center;
+  outline: none;
+  letter-spacing: 0.5px;
+}
+.voice-chat-btn.active {
+  background: #969696;
+}
+.voice-lang {
+  display: flex;
+  align-items: center;
+  background: #fff;
+  border-radius: 50%;
+  border: 2px solid #eee;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  padding: 6px 12px;
+  font-size: 17px;
+  margin-left: 2px;
+  min-width: 38px;
+}
+.flag-emoji {
+  margin-right: 2px;
+  font-size: 22px;
+  line-height: 1;
+}
+@media (max-width: 500px) {
+  .voice-widget { bottom: 8px; right: 8px; }
+  .voice-widget-main { min-width: 170px; padding-right: 4px; }
+  .voice-logo { width: 32px; height: 32px; }
+  .voice-chat-btn { font-size: 16px; min-width: 90px; }
+}
